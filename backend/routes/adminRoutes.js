@@ -20,13 +20,13 @@ router.get("/allemployees", async (req, res) => {
 // Route to create a shift
 router.post("/shifts", async (req, res) => {
   const { username, date, startTime, endTime } = req.body;
-    console.log(req.body);
+  console.log(req.body);
   try {
     // Check for overlapping shifts
     let shift = await Shift.findOne({
       username,
       date,
-      $or: [ { startTime: { $lt: endTime }, endTime: { $gt: startTime } }],
+      $or: [{ startTime: { $lt: endTime }, endTime: { $gt: startTime } }],
     });
     console.log(shift);
     if (shift) {
@@ -44,7 +44,7 @@ router.post("/shifts", async (req, res) => {
       console.log(shift);
     }
 
-// save the shifts to the database
+    // save the shifts to the database
     // await shift.save();
     console.log("Shift saved:", shift);
 

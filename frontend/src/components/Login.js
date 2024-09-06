@@ -1,80 +1,90 @@
-
-import axios from 'axios';
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import axios from "axios";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [rolelogin, setRoleLogin] = useState('employee'); // Default role
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [rolelogin, setRoleLogin] = useState("employee"); // Default role
   const [error, setError] = useState(null); // State for storing error messages
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Clear any previous error messages
     setError(null);
 
     // Check if username and password are entered
     if (!username || !password) {
-      setError('Please enter both username and password');
+      setError("Please enter both username and password");
       return; // Stop submission if credentials are empty
     }
 
     try {
       // Send login request to backend with username, password, and role
-      const role=rolelogin;
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
-        username,
-        password,
-        role,
-      });
+      const role = rolelogin;
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        {
+          username,
+          password,
+          role,
+        }
+      );
 
       if (response.status === 200) {
         // Handle successful login
-        
+
         const token = response.data.token;
-        localStorage.setItem('token', token); // Store the token in localStorage
+        localStorage.setItem("token", token); // Store the token in localStorage
         const username = response.data.username;
-        localStorage.setItem('username', username); // Store the username in localStorage
-        localStorage.setItem('StoreRole', rolelogin); // Store Role {admin ,employee}
+        localStorage.setItem("username", username); // Store the username in localStorage
+        localStorage.setItem("StoreRole", rolelogin); // Store Role {admin ,employee}
         const rolecheck = response.data.role;
 
-        console.log('Role:',rolecheck);
-        console.log('Login successful!', token,username,rolecheck);
+        console.log("Role:", rolecheck);
+        console.log("Login successful!", token, username, rolecheck);
 
         // Redirect to appropriate page based on role
-      if(rolecheck === localStorage.getItem('StoreRole')){
-        if (rolelogin === 'admin') {
-          navigate('/admin-dashboard');
-        } else {
-          navigate('/employee');
+        if (rolecheck === localStorage.getItem("StoreRole")) {
+          if (rolelogin === "admin") {
+            navigate("/admin-dashboard");
+          } else {
+            navigate("/employee");
+          }
         }
-      }
       } else {
-        setError(response.data.error || 'Incorrect username or password');
+        setError(response.data.error || "Incorrect username or password");
         // Clear input fields on error
-        setUsername('');
-        setPassword('');
+        setUsername("");
+        setPassword("");
       }
     } catch (error) {
-      setError('Incorrect username or password'); // Show error message
-      console.error('Error during login:', error);
+      setError("Incorrect username or password"); // Show error message
+      console.error("Error during login:", error);
       // Clear input fields on error
-      setUsername('');
-      setPassword('');
+      setUsername("");
+      setPassword("");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col space-y-4 p-8 bg-grey rounded shadow-md">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col space-y-4 p-8 bg-grey rounded shadow-md"
+    >
       {/* Display error message */}
       {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
 
       <div>
-        <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">Username:</label>
+        <label
+          htmlFor="username"
+          className="block text-gray-700 text-sm font-bold mb-2"
+        >
+          Username:
+        </label>
         <input
           type="text"
           id="username"
@@ -85,7 +95,12 @@ const Login = () => {
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">Password:</label>
+        <label
+          htmlFor="password"
+          className="block text-gray-700 text-sm font-bold mb-2"
+        >
+          Password:
+        </label>
         <input
           type="password"
           id="password"
@@ -96,7 +111,12 @@ const Login = () => {
       </div>
 
       <div>
-        <label htmlFor="role" className="block text-gray-700 text-sm font-bold mb-2">Role:</label>
+        <label
+          htmlFor="role"
+          className="block text-gray-700 text-sm font-bold mb-2"
+        >
+          Role:
+        </label>
         <select
           id="role"
           value={rolelogin}
