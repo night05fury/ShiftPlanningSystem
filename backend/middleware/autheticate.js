@@ -15,14 +15,9 @@ const authenticateToken = (req, res, next) => {
     // Verify token with the secret key (used during login)
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log(decoded);
-    req.user = decoded.Username; // Add the user information from the token to the request object
-    
-    //User role 
-    req.user.role=decoded.role;
-    const me=req.user;
-
-    console.log(me);
-    next(); // Proceed to the next middleware or route handler
+    req.user = decoded; // Add the user information from the token to the request object
+      next();
+     // Proceed to the next middleware or route handler
   } catch (error) {
     // If token verification fails
     return res.status(403).json({ message: 'Invalid token' });

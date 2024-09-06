@@ -23,9 +23,10 @@ mongoose
 
 //middlewares
 app.use(cors());
-// app.use(authenticateToken());
-// Parse incoming JSON data
-// app.use(parseJSON());
+
+
+
+
 
 app.use(express.json());
 app.use("/api/auth", authRoutes);
