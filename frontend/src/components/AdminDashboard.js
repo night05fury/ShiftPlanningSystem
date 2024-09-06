@@ -20,7 +20,13 @@ const AdminDashboard = () => {
 // Fetch all users who have the employee role
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('/api/admin/allemployees');
+      const token=localStorage.getItem('token');// JSON token for the user account authentication
+
+      const response = await axios.get('/api/admin/allemployees',{
+        headers: {
+          Authorization: `Bearer ${token}`, // Send token for authentication
+        },
+      });
       console.log(response.data);
       setUsers(response.data);
     } catch (err) {

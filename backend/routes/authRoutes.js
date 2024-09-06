@@ -16,7 +16,7 @@ router.post("/register", (req, res) => {
 // Login
 router.post("/login", async (req, res) => {
   try {
-    const { username, password, role } = req.body;
+    const { username, password } = req.body;
 
     // Find the user by username
     const user = await User.findOne({ username });
@@ -27,8 +27,8 @@ router.post("/login", async (req, res) => {
     }
     // Compare the provided password with the hashed password in the database
     const isMatch = await bcrypt.compare(password, user.password);
-    const rolecheck = await bcrypt.compare(role, user.role);
-    if (!isMatch && !rolecheck) {
+    
+    if (!isMatch ) {
       return res.status(400).json({
         error: "Invalid username or password",
       });
@@ -41,7 +41,7 @@ router.post("/login", async (req, res) => {
       { expiresIn: "24h" }
     );
 
-    res.json({ username, token, role });
+    res.json({ username, token });
   } catch (err) {
     console.error("Error during login:", err);
     res.status(500).json({ error: "Internal server error" });

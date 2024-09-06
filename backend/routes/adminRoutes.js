@@ -2,13 +2,19 @@ const express = require("express");
 const mongoose = require("mongoose");
 const Employee = require("../models/User");
 const Shift = require("../models/Shifts");
-//const authenticateToken = require("../middleware/autheticate");
+const authenticateToken = require("../middleware/autheticate");
+const isAdmin = require("../middleware/isAdmin");
+
 
 const router = express.Router();
 
 // Get all employees with the role 'employee'
-router.get("/allemployees", async (req, res) => {
+router.get("/allemployees",authenticateToken, async (req, res) => {
+  if(req.user.role !== 'employee'){
+    return res.status(401).json({message:'User does not have permission to access this resource'});
+  }
   try {
+    
     const employees = await Employee.find({ role: "employee" });
     res.json(employees);
   } catch (error) {
@@ -18,9 +24,12 @@ router.get("/allemployees", async (req, res) => {
 });
 
 // Route to create a shift
-router.post("/shifts", async (req, res) => {
+router.post("/shifts", authenticateToken, async (req, res) => {
   const { username, date, startTime, endTime } = req.body;
   console.log(req.body);
+  if(req.user.role !== 'admin'){
+    return res.status(401).json({message:'User does not have permission to access this resource'});
+  }
   try {
     // Check for overlapping shifts
     let shift = await Shift.findOne({

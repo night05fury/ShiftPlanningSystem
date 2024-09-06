@@ -49,7 +49,7 @@ router.get("/availability", async (req, res) => {
 // GET Fetch  availability for the logged-in employee
 router.get("/myavailability", authenticateToken, async (req, res) => {
   try {
-    const username = req.user;
+    const username = req.user.Username;
     const availabilities = await Availability.find({ username });
 
     res.json(availabilities);
@@ -60,8 +60,8 @@ router.get("/myavailability", authenticateToken, async (req, res) => {
 // GET Fetch all shifts for the employee
 router.get("/shifts", authenticateToken, async (req, res) => {
   try {
-    const username = req.user; // Assuming the username is stored in the JWT payload
-
+    const username = req.user.Username; // Assuming the username is stored in the JWT payload
+    console.log(username);
     const shifts = await Shift.find({ username });
     if (!username) {
       return res.status(400).json({ error: "Username is required" });

@@ -36,7 +36,6 @@ const Login = () => {
 
       if (response.status === 200) {
         // Handle successful login
-
         const token = response.data.token;
         localStorage.setItem("token", token); // Store the token in localStorage
         const username = response.data.username;
@@ -48,13 +47,13 @@ const Login = () => {
         console.log("Login successful!", token, username, rolecheck);
 
         // Redirect to appropriate page based on role
-        if (rolecheck === localStorage.getItem("StoreRole")) {
+         
           if (rolelogin === "admin") {
             navigate("/admin-dashboard");
           } else {
             navigate("/employee");
           }
-        }
+        
       } else {
         setError(response.data.error || "Incorrect username or password");
         // Clear input fields on error
