@@ -14,7 +14,12 @@ const CreateShift = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await axios.get("/api/admin/allemployees");
+        const token = localStorage.getItem('token');
+        const response = await axios.get("/api/admin/allemployees",{
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setEmployees(response.data);
         console.log("From create shift", response.data);
       } catch (err) {
@@ -30,7 +35,9 @@ const CreateShift = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/api/admin/shifts", {
+      
+      await axios.post("/api/admin/shifts",
+        {}, {
         username,
         date,
         startTime,
