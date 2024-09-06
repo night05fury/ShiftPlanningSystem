@@ -1,6 +1,19 @@
 # Getting Started with Create React App
 
+## Environment Variables
+
+To run this project, you will need to add the following environment variables to your `.env` file:
+
+Backend Environment
+ MONGO_URI="Your Database URI"
+e.g.
+MONGO_URI=mongodb://localhost:27069/SFS
+
+JWT_SECRET="Your secret key"
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
 
 ## Available Scripts
 
