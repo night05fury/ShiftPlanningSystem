@@ -18,7 +18,7 @@
     "dev": "nodemon app.js"
   },
   "keywords": [],
-  "author": "Mayank Kumar Patel < themayank05@gmail.com>",
+  "author": "Mayank Kumar Patel <themayank05@gmail.com>",
   "license": "ISC",
   "description": ""
 }
