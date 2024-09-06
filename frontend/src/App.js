@@ -5,17 +5,26 @@ import Navbar from './components/Navbar';
 //import Home from './components/Home'; // Assuming you have a Home component
 import Login from './components/Login';
 import Register from './components/Register';
+import EmployeeDashboard from './components/EmployeeDashboard';
+import AdminDashboard from './components/AdminDashboard';
+import HomePage from './components/Home';
+
 
 const App = () => {
   return (
+    
     <BrowserRouter>
       <Navbar />
       <Routes>
-        {/* <Route path="/" element={<Home />} /> */}
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/employee" element={<EmployeeDashboard />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+
       </Routes>
     </BrowserRouter>
+    
   );
 };
 
