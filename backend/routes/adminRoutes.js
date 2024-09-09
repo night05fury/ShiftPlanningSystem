@@ -10,7 +10,7 @@ const router = express.Router();
 
 // Get all employees with the role 'employee'
 router.get("/allemployees",authenticateToken, async (req, res) => {
-  if(req.user.role !== 'employee'){
+  if(req.user.role !== 'admin'){
     return res.status(401).json({message:'User does not have permission to access this resource'});
   }
   try {
