@@ -1,12 +1,16 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../middleware/AuthContext";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rolelogin, setRoleLogin] = useState("employee"); // Default role
   const [error, setError] = useState(null); // State for storing error messages
+
+ 
+  const { login } = useContext(AuthContext); // Get the login function from the AuthContext
 
   const navigate = useNavigate();
 
@@ -36,6 +40,7 @@ const Login = () => {
 
       if (response.status === 200) {
         // Handle successful login
+        console.log(response.data);
         const token = response.data.token;
         localStorage.setItem("token", token); // Store the token in localStorage
         const username = response.data.username;
@@ -46,12 +51,15 @@ const Login = () => {
         console.log("Role:", rolecheck);
         console.log("Login successful!", token, username, rolecheck);
 
+        login (username, token); // Call the login function from AuthContext
+
         // Redirect to appropriate page based on role
          
           if (rolelogin === "admin") {
             navigate("/admin-dashboard");
           } else {
-            navigate("/employee");
+            
+            navigate(`/employee/${username}`);
           }
         
       } else {

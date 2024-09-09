@@ -1,6 +1,6 @@
 // client/src/App.js
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 //import Home from './components/Home'; // Assuming you have a Home component
 import Login from './components/Login';
@@ -8,22 +8,33 @@ import Register from './components/Register';
 import EmployeeDashboard from './components/EmployeeDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import HomePage from './components/Home';
+import { AuthProvider } from './middleware/AuthContext';
+import ProtectedRoutes from './middleware/ProtectedRoutes';
 
 
 const App = () => {
   return (
-    
+    <AuthProvider>
+
     <BrowserRouter>
       <Navbar />
       <Routes>
+      {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/employee" element={<EmployeeDashboard />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        {/* Protected Routes */}
+        <Route path='/employee/:username' element={<ProtectedRoutes>
+          <EmployeeDashboard/>
+        </ProtectedRoutes>}>
+        </Route>
+        <Route path='/admin-dashboard' element={<ProtectedRoutes>
+          <AdminDashboard/>
+        </ProtectedRoutes>}></Route>
 
       </Routes>
     </BrowserRouter>
+    </AuthProvider>
     
   );
 };

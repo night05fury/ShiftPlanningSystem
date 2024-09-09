@@ -16,13 +16,13 @@ router.post("/register", (req, res) => {
 // Login
 router.post("/login", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, role } = req.body;
 
     // Find the user by username
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username, role });
     if (!user) {
       return res.status(400).json({
-        error: "Invalid username or passwordv or role",
+        error: "Invalid username or password or role",
       });
     }
     // Compare the provided password with the hashed password in the database

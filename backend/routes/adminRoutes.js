@@ -55,9 +55,9 @@ router.post("/shifts", authenticateToken, async (req, res) => {
 
     // save the shifts to the database
     // await shift.save();
-    console.log("Shift saved:", shift);
+    // console.log("Shift saved:", shift);
+    // console.log("Shift created successfully!");
 
-    console.log("Shift created successfully!");
     res.status(201).json({ message: "Shift created successfully!" });
   } catch (error) {
     res.status(500).json({ error: "Error creating shift" });
