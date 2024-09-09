@@ -15,15 +15,7 @@ const Navbar = () => {
     navigate('/login');
   };
 
-  useEffect(() => {
-    // Retrieve user info from localStorage
-    const storedUser = localStorage.getItem('username');
-    if (storedUser) {
-      setUser(storedUser);
-    } else {
-      navigate('/login'); // Redirect to login if no user data
-    }
-  }, [navigate]);
+  
 
   return (
     <nav className="bg-gray-800 p-4">
