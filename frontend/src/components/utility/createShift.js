@@ -36,8 +36,8 @@ const CreateShift = () => {
     e.preventDefault();
     try {
       
-      await axios.post("/api/admin/shifts",
-        {}, {
+      await axios.post("http://localhost:5000/api/admin/shifts",
+        {
         username,
         date,
         startTime,
