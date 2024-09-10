@@ -24,12 +24,11 @@ router.get("/allemployees",authenticateToken, async (req, res) => {
 });
 
 // Route to create a shift
-router.post("/shifts", authenticateToken, async (req, res) => {
+router.post("/shifts", async (req, res) => {
+
   const { username, date, startTime, endTime } = req.body;
   console.log(req.body);
-  if(req.user.role !== 'admin'){
-    return res.status(401).json({message:'User does not have permission to access this resource'});
-  }
+
   try {
     // Check for overlapping shifts
     let shift = await Shift.findOne({
