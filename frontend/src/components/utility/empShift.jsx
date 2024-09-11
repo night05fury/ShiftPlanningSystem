@@ -12,14 +12,21 @@ const EmployeeShifts = () => {
     const fetchShifts = async () => {
       try {
         const token = localStorage.getItem('token'); // JWT token is stored in localStorage
-        const response = await axios.get('/api/employee/shifts', {
-          headers: {
-            Authorization: `Bearer ${token}`, // Send token for authentication
-          },
-        });
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/employee/shifts`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Send token for authentication
+            },
+          }
+        );
 
-        setShifts(response.data);
-        console.log('Shifts:', response.data);
+        // Sort the shifts by date before setting them in state
+        const sortedShifts = response.data.sort((a, b) =>
+          moment(a.date).isAfter(moment(b.date)) ? 1 : -1
+        );
+
+        setShifts(sortedShifts);
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch shifts');
@@ -46,7 +53,7 @@ const EmployeeShifts = () => {
       <table className="min-w-full bg-white">
         <thead>
           <tr>
-            <th className="border px-4 py-2">Day</th> 
+            <th className="border px-4 py-2">Day</th>
             <th className="border px-4 py-2">Date</th>
             <th className="border px-4 py-2">Start Time</th>
             <th className="border px-4 py-2">End Time</th>
@@ -56,10 +63,10 @@ const EmployeeShifts = () => {
           {shifts.map((shift) => (
             <tr key={shift._id}>
               <td className="border px-4 py-2">
-                {moment(shift.date).format('dddd')} 
+                {moment(shift.date).format('dddd')}
               </td>
               <td className="border px-4 py-2">
-                {moment(shift.date).format('YYYY-MM-DD')}
+                {moment(shift.date).format('DD-MM-YYYY')}
               </td>
               <td className="border px-4 py-2">
                 {moment(shift.startTime, 'HH:mm').format('hh:mm A')}

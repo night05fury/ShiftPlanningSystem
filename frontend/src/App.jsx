@@ -10,6 +10,7 @@ import AdminDashboard from './components/AdminDashboard';
 import HomePage from './components/Home';
 import { AuthProvider } from './middleware/AuthContext';
 import ProtectedRoutes from './middleware/ProtectedRoutes';
+import {Toaster} from "react-hot-toast";
 
 
 const App = () => {
@@ -17,6 +18,7 @@ const App = () => {
     <AuthProvider>
 
     <BrowserRouter>
+      <Toaster/>
       <Navbar />
       <Routes>
       {/* Public Routes */}
@@ -35,51 +37,8 @@ const App = () => {
       </Routes>
     </BrowserRouter>
     </AuthProvider>
-    
+
   );
 };
 
 export default App;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import './App.css';
-// import Login from './components/Login';
-// import Navbar from './components/Navbar';
-// import Register from './components/Register';
-
-// function App() {
-//   return (
-
-
-
-//     <div className="App">
-//     <div className='text-xl'>
-//       <h1>This is frontend</h1>
-      
-//       <Login/>
-//       <Register/>
-//     </div>
-//     </div>
-//   );
-// }
-
-// export default App;

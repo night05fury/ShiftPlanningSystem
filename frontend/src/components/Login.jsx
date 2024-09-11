@@ -2,14 +2,14 @@ import axios from "axios";
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../middleware/AuthContext";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rolelogin, setRoleLogin] = useState("employee"); // Default role
   const [error, setError] = useState(null); // State for storing error messages
-
- 
+  const URL=import.meta.env.VITE_BACKEND_URL;
   const { login } = useContext(AuthContext); // Get the login function from the AuthContext
 
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const Login = () => {
 
     // Check if username and password are entered
     if (!username || !password) {
-      setError("Please enter both username and password");
+      toast.error("Please enter both username and password.");
       return; // Stop submission if credentials are empty
     }
 
@@ -30,7 +30,7 @@ const Login = () => {
       // Send login request to backend with username, password, and role
       const role = rolelogin;
       const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        `${URL}/api/auth/login`,
         {
           username,
           password,
@@ -51,27 +51,37 @@ const Login = () => {
         console.log("Role:", rolecheck);
         console.log("Login successful!", token, username, rolecheck);
 
+        
+
         login (username, token); // Call the login function from AuthContext
 
         // Redirect to appropriate page based on role
-         
+
           if (rolelogin === "admin") {
             navigate("/admin-dashboard");
           } else {
-            
+
             navigate(`/employee/${username}`);
           }
-        
+
       } else {
-        setError(response.data.error || "Incorrect username or password");
+        toast.error(response.data.error);
         // Clear input fields on error
         setUsername("");
         setPassword("");
       }
     } catch (error) {
-      setError("Incorrect username or password"); // Show error message
-      console.error("Error during login:", error);
-      // Clear input fields on error
+      if (error.response) {
+        if (error.response.status === 400) {
+          toast.error('Invalid credentials. Please check your username and password.');
+        } else if (error.response.status === 500) {
+          toast.error('Server error. Please try again later.');
+        } else {
+          toast.error(error.response.data.message || 'An error occurred. Please try again.');
+        }
+      } else {
+        toast.error('Network error. Please check your connection and try again.');
+      }
       setUsername("");
       setPassword("");
     }

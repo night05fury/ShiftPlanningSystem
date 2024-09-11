@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function HomePage() {
+  useEffect(() => {
+    // Clear the token and any other user data stored in localStorage
+    localStorage.clear();  // This will remove all stored items
+  }, []);
   const navigate = useNavigate();
 
   const handleButtonClick = () => {

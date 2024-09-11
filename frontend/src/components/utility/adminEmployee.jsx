@@ -18,7 +18,7 @@ const AdminEmployeeAvailability = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("/api/admin/allemployees");
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/admin/allemployees`);
       setUsers(response.data);
     } catch (err) {
       setError("Failed to fetch users");
@@ -28,7 +28,7 @@ const AdminEmployeeAvailability = () => {
 
   const fetchAvailabilities = async () => {
     try {
-      const response = await axios.get("/api/employee/availability");
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/employee/availability`);
       setAvailabilities(response.data);
       console.log(response.data);
     } catch (err) {
@@ -47,7 +47,7 @@ const AdminEmployeeAvailability = () => {
 
   const handleDeleteUser = async (userId) => {
     try {
-      await axios.delete(`/api/admin/users/${userId}`);
+      await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/admin/users/${userId}`);
       setUsers(users.filter((user) => user.id !== userId)); // Remove deleted user from state
     } catch (err) {
       setError("Failed to delete user");

@@ -1,23 +1,36 @@
 const express = require("express");
 const router = express.Router();
+const moment = require("moment-timezone");
 const Availability = require("../models/Availability");
 const authenticateToken = require("../middleware/autheticate");
 const Shift = require("../models/Shifts");
+
+
 // POST Create availability
 router.post("/availability", authenticateToken, async (req, res) => {
   const { username, date, startTime, endTime, timezone } = req.body;
+  console.log(' data from availability',req.body);
+
   try {
     // Check if the availability already exists for the employee on the given date
-    let availability = await Availability.findOne({ username, date });
+    let availability = await Availability.find({ username, date });
 
-    if (availability) {
-      // If availability exists, update it
-      availability.username = username;
-      availability.date = date;
-      availability.startTime = startTime;
-      availability.endTime = endTime;
-      availability.timezone = timezone;
-    } else {
+    // If availability exists, check for overlapping times
+    const overlappingAvailabilities = await Availability.find({
+      username,
+      date,
+        $nor: [
+      { endTime: { $lte: startTime } },  // ThisEndTime is before document's startTime (non-overlapping)
+      { startTime: { $gte: endTime } }   // ThisStartTime is after document's endTime (non-overlapping)
+    ]
+    });
+    // If any overlapping availabilities are found, return an error
+    if (overlappingAvailabilities.length > 0) {
+      return res.status(400).json({ error: "Availability overlaps with an existing entry" });
+    }
+    
+
+    
       // If no availability exists, create a new one
       availability = new Availability({
         username,
@@ -26,7 +39,7 @@ router.post("/availability", authenticateToken, async (req, res) => {
         endTime,
         timezone,
       });
-    }
+    
     // Save the availability to the database
     await availability.save();
     res.status(201).json({ msg: "Availability saved successfully" });
