@@ -125,7 +125,7 @@ const AdminDashboard = () => {
                   // Convert start and end times to the admin's selected timezone without modifying the original availability times
                   const startMoment = moment.tz(
                     `${avail.date} ${avail.startTime}`,
-                    "HH:mm YYYY-MM-DD",
+                    "YYYY-MM-DD HH:mm",
                     avail.timezone
                   );
                   const endMoment = moment.tz(
