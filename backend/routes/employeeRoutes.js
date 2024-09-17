@@ -70,6 +70,26 @@ router.get("/myavailability", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Server error." });
   }
 });
+
+// delete the availability for the logged-in employee
+router.delete('/availability/:availabilityId', async (req, res) => {
+  try {
+    const availabilityId = req.params.availabilityId;
+
+    const deletedAvailability = await Availability.findByIdAndDelete(availabilityId);
+    // if deleted availability is not available
+    if (!deletedAvailability) {
+      return res.status(404).json({ error: 'Availability not found' });
+    }
+
+    res.json({ message: 'Availability deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting availability:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 // GET Fetch all shifts for the employee
 router.get("/shifts", authenticateToken, async (req, res) => {
   try {

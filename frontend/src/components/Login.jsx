@@ -58,7 +58,7 @@ const Login = () => {
         // Redirect to appropriate page based on role
 
           if (rolelogin === "admin") {
-            navigate("/admin-dashboard");
+            navigate(`/admin-dashboard/${username}`);
           } else {
 
             navigate(`/employee/${username}`);

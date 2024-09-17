@@ -12,7 +12,7 @@ const AuthProvider = ({children}) => {
     // Check if the user is logged in by checking the token in localStorage
     useEffect(() => {
         const token = localStorage.getItem('token');
-        console.log('token: ' + token);
+        
         if (token) {
             const storedUser = (localStorage.getItem('username')); // Assuming user info is stored after login
             setUser(storedUser);

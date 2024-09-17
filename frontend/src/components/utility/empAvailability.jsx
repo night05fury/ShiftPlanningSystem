@@ -114,6 +114,26 @@ if (isOverlapping) {
       console.error("Error fetching availability:", err);
     }
   };
+// delete availability
+const handleDeleteAvailability = async (availabilityId) => {
+ 
+  try {
+    const response = await axios.delete(
+      `${import.meta.env.VITE_BACKEND_URL}/api/employee/availability/${availabilityId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+    toast.success("Availability deleted successfully!");
+    // Update the createdAvailability state to remove the deleted availability
+    setCreatedAvailability(createdAvailability.filter((availability) => availability._id !== availabilityId));
+  } catch (err) {
+    console.error("Error deleting availability:", err);
+    setError("Failed to delete availability");
+  }
+};
 
   useEffect(() => {
     fetchAvailability();
@@ -219,6 +239,7 @@ if (isOverlapping) {
                 <th className="px-4 py-2">Start Time</th>
                 <th className="px-4 py-2">End Time</th>
                 <th className="px-4 py-2">Timezone</th>
+                <th className="px-4 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -233,6 +254,9 @@ if (isOverlapping) {
                   <td className="border px-4 py-2">{avail.startTime}</td>
                   <td className="border px-4 py-2">{avail.endTime}</td>
                   <td className="border px-4 py-2">{avail.timezone}</td>
+                  <td className="border px-4 py-2" ><button className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600" 
+                  onClick={() => handleDeleteAvailability(avail._id)}>
+                  Delete</button> </td>
                 </tr>
               ))}
             </tbody>
