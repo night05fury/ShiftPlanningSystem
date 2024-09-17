@@ -30,7 +30,7 @@ const App = () => {
           <EmployeeDashboard/>
         </ProtectedRoutes>}>
         </Route>
-        <Route path='/admin-dashboard' element={<ProtectedRoutes>
+        <Route path='/admin-dashboard/:username' element={<ProtectedRoutes>
           <AdminDashboard/>
         </ProtectedRoutes>}></Route>
 

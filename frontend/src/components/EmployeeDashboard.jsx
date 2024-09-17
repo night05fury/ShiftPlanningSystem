@@ -16,15 +16,6 @@ const EmployeeDashboard = () => {
       </div>
     </div>
   </div>
-    
-    
-    // <div>
-    //     <div>
-    //         {<EmployeeAvailability/>}
-    //         {<EmployeeShifts/>}
-    //     </div>
-
-    // </div>
   );
 };
 
