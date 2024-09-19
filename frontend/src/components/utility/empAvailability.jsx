@@ -4,12 +4,11 @@ import moment from "moment-timezone";
 import { toast } from "react-hot-toast";
 
 const EmployeeAvailability = () => {
-  // Retrieve the token and username from localStorage
   const token = localStorage.getItem("token");
   const username = localStorage.getItem("username");
 
   const [availability, setAvailability] = useState({
-    username: username, // Set the username from the token
+    username: username,
     date: moment().startOf("week").format("YYYY-MM-DD"),
     startTime: "08:00",
     endTime: "16:00",
@@ -17,6 +16,7 @@ const EmployeeAvailability = () => {
   });
 
   const [createdAvailability, setCreatedAvailability] = useState([]);
+  const [assignedShifts, setAssignedShifts] = useState([]);
   const [error, setError] = useState("");
 
   const timezoneOptions = moment.tz.names().map((tz) => (
@@ -27,7 +27,6 @@ const EmployeeAvailability = () => {
 
   const handleChange = (e) => {
     setAvailability({
-      // Set the availability
       ...availability,
       [e.target.name]: e.target.value,
     });
@@ -43,28 +42,28 @@ const EmployeeAvailability = () => {
       setError("Availability must be for at least 4 hours.");
       return;
     }
-// Check for overlapping availability
-const isOverlapping = createdAvailability.some((avail) => {
-  // Check if the dates match
-  if (avail.date === availability.date) {
-    const existingStart = moment(avail.startTime, "HH:mm");
-    const existingEnd = moment(avail.endTime, "HH:mm");
 
-    // Check if the new availability overlaps with the existing one
-    return (
-      (start.isBetween(existingStart, existingEnd, undefined, "[)") ||
-        end.isBetween(existingStart, existingEnd, undefined, "(]") ||
-        start.isSame(existingStart) ||
-        end.isSame(existingEnd)) ||
-      (start.isBefore(existingStart) && end.isAfter(existingEnd))
-    );
-  }
-  return false;
-});
-if (isOverlapping) {
-  toast.error("Availability overlaps with an existing entry.");
-  return;
-}
+    const isOverlapping = createdAvailability.some((avail) => {
+      if (avail.date === availability.date) {
+        const existingStart = moment(avail.startTime, "HH:mm");
+        const existingEnd = moment(avail.endTime, "HH:mm");
+
+        return (
+          start.isBetween(existingStart, existingEnd, undefined, "[)") ||
+          end.isBetween(existingStart, existingEnd, undefined, "(]") ||
+          start.isSame(existingStart) ||
+          end.isSame(existingEnd) ||
+          (start.isBefore(existingStart) && end.isAfter(existingEnd))
+        );
+      }
+      return false;
+    });
+
+    if (isOverlapping) {
+      toast.error("Availability overlaps with an existing entry.");
+      return;
+    }
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/employee/availability`,
@@ -78,7 +77,6 @@ if (isOverlapping) {
       setError("");
       toast.success("Availability created successfully!");
 
-      // Reload availability after submission
       fetchAvailability();
     } catch (err) {
       console.error("Error creating availability:", err);
@@ -86,27 +84,24 @@ if (isOverlapping) {
     }
   };
 
-  // Fetch all created availability on component mount
   const fetchAvailability = async () => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/api/employee/myavailability`,
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
-      // Sort the data by date, taking into account year, month, and day
       const sortedAvailability = response.data.sort(
         (a, b) => new Date(a.date) - new Date(b.date)
       );
 
-      // Parse dates to ensure they're correctly formatted
       const parsedAvailability = sortedAvailability.map((avail) => ({
         ...avail,
-        date: moment(avail.date).format("YYYY-MM-DD"), // Ensuring date format
+        date: moment(avail.date).format("YYYY-MM-DD"),
       }));
 
       setCreatedAvailability(parsedAvailability);
@@ -114,30 +109,66 @@ if (isOverlapping) {
       console.error("Error fetching availability:", err);
     }
   };
-// delete availability
-const handleDeleteAvailability = async (availabilityId) => {
- 
-  try {
-    const response = await axios.delete(
-      `${import.meta.env.VITE_BACKEND_URL}/api/employee/availability/${availabilityId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-    toast.success("Availability deleted successfully!");
-    // Update the createdAvailability state to remove the deleted availability
-    setCreatedAvailability(createdAvailability.filter((availability) => availability._id !== availabilityId));
-  } catch (err) {
-    console.error("Error deleting availability:", err);
-    setError("Failed to delete availability");
-  }
-};
+
+  const fetchAssignedShifts = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/employee/shifts`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setAssignedShifts(response.data);
+    } catch (err) {
+      console.error("Error fetching assigned shifts:", err);
+    }
+  };
+
+  const handleDeleteAvailability = async (availabilityId) => {
+    try {
+      await axios.delete(
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/api/employee/availability/${availabilityId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success("Availability deleted successfully!");
+      setCreatedAvailability(
+        createdAvailability.filter(
+          (availability) => availability._id !== availabilityId
+        )
+      );
+    } catch (err) {
+      console.error("Error deleting availability:", err);
+      setError("Failed to delete availability");
+    }
+  };
 
   useEffect(() => {
     fetchAvailability();
+    fetchAssignedShifts();
   }, [token]);
+
+  const isShiftAssigned = (avail) => {
+    return assignedShifts.some((shift) => {
+      return (
+        shift.date === avail.date &&
+        moment(shift.startTime, "HH:mm").isSameOrAfter(
+          moment(avail.startTime, "HH:mm")
+        ) &&
+        moment(shift.endTime, "HH:mm").isSameOrBefore(
+          moment(avail.endTime, "HH:mm")
+        )
+      );
+    });
+  };
 
   return (
     <div className="container mx-auto">
@@ -229,8 +260,6 @@ const handleDeleteAvailability = async (availabilityId) => {
       <h2 className="text-xl font-bold mt-8 mb-4">Your Weekly Availability</h2>
       <div className="overflow-x-auto">
         <div className="overflow-y-auto max-h-[400px]">
-          {" "}
-          {/* Add vertical scrolling */}
           <table className="min-w-full bg-white">
             <thead>
               <tr>
@@ -239,12 +268,16 @@ const handleDeleteAvailability = async (availabilityId) => {
                 <th className="px-4 py-2">Start Time</th>
                 <th className="px-4 py-2">End Time</th>
                 <th className="px-4 py-2">Timezone</th>
+                <th className="px-4 py-2">Assigned</th>
                 <th className="px-4 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
               {createdAvailability.map((avail, index) => (
-                <tr key={index}>
+                <tr
+                  key={index}
+                  className={isShiftAssigned(avail) ? "bg-green-200" : ""}
+                >
                   <td className="border px-4 py-2">
                     {moment(avail.date, "YYYY-MM-DD").format("dddd")}
                   </td>
@@ -254,9 +287,21 @@ const handleDeleteAvailability = async (availabilityId) => {
                   <td className="border px-4 py-2">{avail.startTime}</td>
                   <td className="border px-4 py-2">{avail.endTime}</td>
                   <td className="border px-4 py-2">{avail.timezone}</td>
-                  <td className="border px-4 py-2" ><button className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600" 
-                  onClick={() => handleDeleteAvailability(avail._id)}>
-                  Delete</button> </td>
+                  <td className="border px-4 py-2">
+                    {isShiftAssigned(avail) ? "Yes" : "No"}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {isShiftAssigned(avail) ? (
+                      ""
+                    ) : (
+                      <button
+                        className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                        onClick={() => handleDeleteAvailability(avail._id)}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

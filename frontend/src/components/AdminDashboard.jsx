@@ -1,23 +1,25 @@
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import moment from "moment-timezone";
 import CreateShift from "./utility/createShift";
 
-// Define an array of timezones for the dropdown (this can be extended as needed)
+// Define an array of timezones for the dropdown 
 const timezones = moment.tz.names();
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [availabilities, setAvailabilities] = useState([]);
+  const [shifts, setShifts] = useState([]); // State for shifts
   const [selectedTimezone, setSelectedTimezone] = useState(moment.tz.guess()); // Default to admin's timezone
   const [selectedEmployee, setSelectedEmployee] = useState(""); // State for selected employee
+  const [selectedDate, setSelectedDate] = useState(""); // State for selected date
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Fetch Users and Availabilities when the component mounts
+    // Fetch Users, Availabilities, and Shifts when the component mounts
     fetchUsers();
     fetchAvailabilities();
+    fetchShifts();
   }, []);
 
   // Fetch all users who have the employee role
@@ -53,18 +55,40 @@ const AdminDashboard = () => {
     }
   };
 
+  // Fetch the shifts of all employees
+  const fetchShifts = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/admin/shifts`
+      );
+      setShifts(response.data);
+    } catch (err) {
+      setError("Failed to fetch shifts");
+      console.error(err);
+    }
+  };
+
   const handleTimezoneChange = (event) => {
     setSelectedTimezone(event.target.value);
   };
-
+// used in the call back function below
   const handleEmployeeChange = (employee) => {
     setSelectedEmployee(employee);
   };
+// used in the call back function below
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
 
-  // Filter availabilities based on selected employee
-  const filteredAvailabilities = selectedEmployee
-    ? availabilities.filter((avail) => avail.username === selectedEmployee)
-    : availabilities;
+  // Filter availabilities based on selected employee and selected date
+  const filteredAvailabilities = availabilities.filter((avail) => {
+    const hasShift = shifts.some(
+      (shift) => shift.username === avail.username && shift.date === avail.date
+    );
+    const matchesEmployee = !selectedEmployee || avail.username === selectedEmployee;
+    const matchesDate = !selectedDate || avail.date === selectedDate;
+    return !hasShift && matchesEmployee && matchesDate;
+  });
 
   return (
     <div className="container mx-auto p-8">
@@ -90,13 +114,27 @@ const AdminDashboard = () => {
         </select>
       </div>
 
+      <div className="mb-4">
+        <label htmlFor="date" className="block text-lg font-semibold mb-2">
+          Select Date:
+        </label>
+        <input
+          type="date"
+          id="date"
+          value={selectedDate}
+          onChange={handleDateChange}
+          className="p-2 border rounded"
+        />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Create Shift Component */}
         <div className="bg-white p-4 rounded shadow-md lg:col-span-1">
           <h2 className="text-lg font-bold mb-4">Create Shift for Employees</h2>
           <CreateShift
-            employees={users}
+            employees={users}// Pass the callback function
             onEmployeeChange={handleEmployeeChange} // Pass the callback function
+            onDateChange={handleDateChange} // Pass the callback function
           />
         </div>
 

@@ -1,14 +1,16 @@
-
-import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-const CreateShift = ({ employees, onEmployeeChange }) => {
+
+// eslint-disable-next-line react/prop-types
+const CreateShift = ({ employees, onEmployeeChange,onDateChange }) => {
   const [username, setUsername] = useState("");
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [error, setError] = useState("");
+ 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,14 +26,13 @@ const CreateShift = ({ employees, onEmployeeChange }) => {
       setDate("");
       setStartTime("");
       setEndTime("");
+
     } catch (err) {
       console.log(err.response.status, err.message);
-      if ( err.response.status === 400) {
-        // Check if the error response status code is 400
-        toast.error(err.response.data.error); // Display the error message
+      if (err.response.status === 400) {
+        toast.error(err.response.data.error);
       } else {
-        toast.error("Failed to create shift"); // General error message for other issues
-        // setError("Failed to create shift");
+        toast.error("Failed to create shift");
         setError("Failed to create shift");
         console.error(err);
       }
@@ -40,7 +41,9 @@ const CreateShift = ({ employees, onEmployeeChange }) => {
 
   useEffect(() => {
     onEmployeeChange(username);
-  }, [username, onEmployeeChange]);
+    onDateChange(date);
+  
+  }, [username, onEmployeeChange, date, onDateChange]);
 
   return (
     <div className="container mx-auto p-2">
@@ -50,7 +53,7 @@ const CreateShift = ({ employees, onEmployeeChange }) => {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded px-4 pt-4 pb-4 mb-4 max-w-xs mx-auto" // Adjusted max-w-xs for smaller width
+        className="bg-white shadow-md rounded px-4 pt-4 pb-4 mb-4 max-w-xs mx-auto"
       >
         <div className="mb-3">
           <label
@@ -135,8 +138,12 @@ const CreateShift = ({ employees, onEmployeeChange }) => {
           </button>
         </div>
       </form>
+
+    
     </div>
   );
 };
+
+
 
 export default CreateShift;
