@@ -102,6 +102,19 @@ router.post("/shifts", async (req, res) => {
   }
 });
 
+// get shifts of employees
+router.get('/shifts', async (req, res) => {
+  try {
+    const shifts = await Shift.find();
+    res.json(shifts);
+  } catch (error) {
+    console.error("Error fetching shifts:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+
 // todo: to delete users 
 // router.delete("/delete", async (req, res) => {
 //   try {
