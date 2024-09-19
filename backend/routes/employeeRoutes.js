@@ -28,9 +28,6 @@ router.post("/availability", authenticateToken, async (req, res) => {
     if (overlappingAvailabilities.length > 0) {
       return res.status(400).json({ error: "Availability overlaps with an existing entry" });
     }
-    
-
-    
       // If no availability exists, create a new one
       availability = new Availability({
         username,
@@ -48,7 +45,7 @@ router.post("/availability", authenticateToken, async (req, res) => {
     res.status(500).send("Server error");
   }
 });
-// get the availability for all the employess for admin users
+// get the availability for all the employees for admin users
 router.get("/availability", async (req, res) => {
   try {
     const availabilities = await Availability.find();
