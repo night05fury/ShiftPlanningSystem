@@ -2,7 +2,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
-//import Home from './components/Home'; // Assuming you have a Home component
 import Login from './components/Login';
 import Register from './components/Register';
 import EmployeeDashboard from './components/EmployeeDashboard';

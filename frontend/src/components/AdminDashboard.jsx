@@ -113,20 +113,7 @@ const AdminDashboard = () => {
           ))}
         </select>
       </div>
-
-      <div className="mb-4">
-        <label htmlFor="date" className="block text-lg font-semibold mb-2">
-          Select Date:
-        </label>
-        <input
-          type="date"
-          id="date"
-          value={selectedDate}
-          onChange={handleDateChange}
-          className="p-2 border rounded"
-        />
-      </div>
-
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Create Shift Component */}
         <div className="bg-white p-4 rounded shadow-md lg:col-span-1">
@@ -161,17 +148,8 @@ const AdminDashboard = () => {
               <tbody>
                 {filteredAvailabilities.map((avail) => {
                   // Convert start and end times to the admin's selected timezone without modifying the original availability times
-                  const startMoment = moment.tz(
-                    `${avail.date} ${avail.startTime}`,
-                    "YYYY-MM-DD HH:mm",
-                    avail.timezone
-                  );
-                  const endMoment = moment.tz(
-                    `${avail.date} ${avail.endTime}`,
-                    "YYYY-MM-DD HH:mm",
-                    avail.timezone
-                  );
-
+                  const startMoment = moment.tz(avail.startTime, avail.timezone);
+                  const endMoment = moment.tz(avail.endTime, avail.timezone);
                   const startInAdminTZ = startMoment
                     .clone()
                     .tz(selectedTimezone)
@@ -187,9 +165,9 @@ const AdminDashboard = () => {
                       <td className="border px-4 py-2 whitespace-nowrap">
                         {moment(avail.date).format("DD-MM-YY")}
                       </td>
-                      <td className="border px-4 py-2">{avail.startTime}</td>{" "}
+                      <td className="border px-4 py-2">{moment(avail.startTime).format("HH:mm")}</td>{" "}
                       {/* Display original startTime */}
-                      <td className="border px-4 py-2">{avail.endTime}</td>{" "}
+                      <td className="border px-4 py-2">{moment(avail.endTime).format("HH:mm")}</td>{" "}
                       {/* Display original endTime */}
                       <td className="border px-4 py-2">{avail.timezone}</td>
                       <td className="border px-4 py-2">

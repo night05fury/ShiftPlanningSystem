@@ -69,10 +69,10 @@ const EmployeeShifts = () => {
                 {moment(shift.date).format('DD-MM-YYYY')}
               </td>
               <td className="border px-4 py-2">
-                {moment(shift.startTime, 'HH:mm').format('hh:mm A')}
+                {moment(shift.startTime).format('HH:mm')}
               </td>
               <td className="border px-4 py-2">
-                {moment(shift.endTime, 'HH:mm').format('hh:mm A')}
+                {moment(shift.endTime).format('HH:mm')}
               </td>
             </tr>
           ))}

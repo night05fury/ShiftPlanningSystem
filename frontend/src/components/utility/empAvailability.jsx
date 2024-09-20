@@ -9,9 +9,9 @@ const EmployeeAvailability = () => {
 
   const [availability, setAvailability] = useState({
     username: username,
-    date: moment().startOf("week").format("YYYY-MM-DD"),
     startTime: "08:00",
     endTime: "16:00",
+    date: moment().format("YYYY-MM-DD"), // Default to current date
     timezone: moment.tz.guess(),
   });
 
@@ -19,12 +19,14 @@ const EmployeeAvailability = () => {
   const [assignedShifts, setAssignedShifts] = useState([]);
   const [error, setError] = useState("");
 
+  // Timezone options for the dropdown
   const timezoneOptions = moment.tz.names().map((tz) => (
     <option key={tz} value={tz}>
       {tz}
     </option>
   ));
 
+  // Handle input changes
   const handleChange = (e) => {
     setAvailability({
       ...availability,
@@ -32,28 +34,36 @@ const EmployeeAvailability = () => {
     });
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const start = moment(availability.startTime, "HH:mm");
-    const end = moment(availability.endTime, "HH:mm");
+    // Combine the date with the time inputs to form proper Date objects
+    const startDateTime = new Date(`${availability.date}T${availability.startTime}`);
+    const endDateTime = new Date(`${availability.date}T${availability.endTime}`);
 
-    if (end.diff(start, "hours") < 4) {
-      setError("Availability must be for at least 4 hours.");
-      return;
-    }
+   // !If end time is earlier than start time, it means availability goes to the next day
+  if (endDateTime <= startDateTime) {
+    // Increment the end date by one day
+    endDateTime.setDate(endDateTime.getDate() + 1);
+  }
 
+  // !Make sure the duration is at least 4 hours
+  if (endDateTime - startDateTime < 4 * 60 * 60 * 1000) {
+    //setError("Availability must be for at least 4 hours.");
+    toast.error("Availability must be at least 4 hours");
+    return;
+  }
+    // Check for overlap with existing availability
     const isOverlapping = createdAvailability.some((avail) => {
       if (avail.date === availability.date) {
-        const existingStart = moment(avail.startTime, "HH:mm");
-        const existingEnd = moment(avail.endTime, "HH:mm");
+        const existingStart = new Date(`${avail.date}T${avail.startTime}`);
+        const existingEnd = new Date(`${avail.date}T${avail.endTime}`);
 
         return (
-          start.isBetween(existingStart, existingEnd, undefined, "[)") ||
-          end.isBetween(existingStart, existingEnd, undefined, "(]") ||
-          start.isSame(existingStart) ||
-          end.isSame(existingEnd) ||
-          (start.isBefore(existingStart) && end.isAfter(existingEnd))
+          (startDateTime >= existingStart && startDateTime < existingEnd) ||
+          (endDateTime > existingStart && endDateTime <= existingEnd) ||
+          (startDateTime <= existingStart && endDateTime >= existingEnd)
         );
       }
       return false;
@@ -67,23 +77,34 @@ const EmployeeAvailability = () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/employee/availability`,
-        availability,
+        {
+          username: availability.username,
+          startTime: startDateTime,
+          endTime: endDateTime,
+          date:availability.date,
+          timezone: availability.timezone,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
+
       setError("");
       toast.success("Availability created successfully!");
-
       fetchAvailability();
     } catch (err) {
-      console.error("Error creating availability:", err);
-      setError("Failed to create availability");
+      console.log(err.message);
+      if(err.response.status === 400){
+        toast.error("Availability overlaps with an existing entry.");
+      }
+      // console.error("Error creating availability:", err);
+      // setError("Failed to create availability");
     }
   };
 
+  // Fetch availability data from the backend
   const fetchAvailability = async () => {
     try {
       const response = await axios.get(
@@ -99,17 +120,13 @@ const EmployeeAvailability = () => {
         (a, b) => new Date(a.date) - new Date(b.date)
       );
 
-      const parsedAvailability = sortedAvailability.map((avail) => ({
-        ...avail,
-        date: moment(avail.date).format("YYYY-MM-DD"),
-      }));
-
-      setCreatedAvailability(parsedAvailability);
+      setCreatedAvailability(sortedAvailability);
     } catch (err) {
       console.error("Error fetching availability:", err);
     }
   };
 
+  // Fetch assigned shifts for the employee
   const fetchAssignedShifts = async () => {
     try {
       const response = await axios.get(
@@ -127,12 +144,11 @@ const EmployeeAvailability = () => {
     }
   };
 
+  // Handle availability deletion
   const handleDeleteAvailability = async (availabilityId) => {
     try {
       await axios.delete(
-        `${
-          import.meta.env.VITE_BACKEND_URL
-        }/api/employee/availability/${availabilityId}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/employee/availability/${availabilityId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -156,16 +172,13 @@ const EmployeeAvailability = () => {
     fetchAssignedShifts();
   }, [token]);
 
+  // Check if a shift is assigned
   const isShiftAssigned = (avail) => {
     return assignedShifts.some((shift) => {
       return (
         shift.date === avail.date &&
-        moment(shift.startTime, "HH:mm").isSameOrAfter(
-          moment(avail.startTime, "HH:mm")
-        ) &&
-        moment(shift.endTime, "HH:mm").isSameOrBefore(
-          moment(avail.endTime, "HH:mm")
-        )
+        moment(shift.startTime).isSameOrAfter(avail.startTime) &&
+        moment(shift.endTime).isSameOrBefore(avail.endTime)
       );
     });
   };
@@ -185,7 +198,7 @@ const EmployeeAvailability = () => {
             htmlFor="date"
             className="block text-gray-700 text-sm font-bold mb-2"
           >
-            Date (Start of the Week):
+            Date:
           </label>
           <input
             type="date"
@@ -279,20 +292,28 @@ const EmployeeAvailability = () => {
                   className={isShiftAssigned(avail) ? "bg-green-200" : ""}
                 >
                   <td className="border px-4 py-2">
-                    {moment(avail.date, "YYYY-MM-DD").format("dddd")}
+                    {moment(avail.date).format("dddd")}
                   </td>
                   <td className="border px-4 py-2">
-                    {moment(avail.date, "YYYY-MM-DD").format("DD-MM-YYYY")}
+                    {moment(avail.date).format("DD-MM-YYYY")}
                   </td>
-                  <td className="border px-4 py-2">{avail.startTime}</td>
-                  <td className="border px-4 py-2">{avail.endTime}</td>
+                  <td className="border px-4 py-2">
+                    {moment(avail.startTime).format("HH:mm")}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {moment(avail.endTime).format("HH:mm")}
+                  </td>
                   <td className="border px-4 py-2">{avail.timezone}</td>
                   <td className="border px-4 py-2">
                     {isShiftAssigned(avail) ? "Yes" : "No"}
                   </td>
                   <td className="border px-4 py-2">
                     {isShiftAssigned(avail) ? (
-                      ""
+                      <button
+                        className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-grey-600"
+                      >
+                        Delete
+                      </button>
                     ) : (
                       <button
                         className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
