@@ -46,13 +46,6 @@ const Login = () => {
         const username = response.data.username;
         localStorage.setItem("username", username); // Store the username in localStorage
         localStorage.setItem("StoreRole", rolelogin); // Store Role {admin ,employee}
-        const rolecheck = response.data.role;
-
-        console.log("Role:", rolecheck);
-        console.log("Login successful!", token, username, rolecheck);
-
-        
-
         login (username, token); // Call the login function from AuthContext
 
         // Redirect to appropriate page based on role

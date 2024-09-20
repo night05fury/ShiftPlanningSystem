@@ -10,18 +10,16 @@ const ShiftSchema = new mongoose.Schema({
     required: true
   },
   startTime: {
-    type: String, // Format: HH:mm (24-hour time)
+    type: Date, // Format: HH:mm (24-hour time)
     required: true
   },
   endTime: {
-    type: String, // Format: HH:mm (24-hour time)
+    type: Date, // Format: HH:mm (24-hour time)
     required: true
   },
 
 });
-ShiftSchema.pre("save", function (next) {
-  console.log("About to save shift:", this);
-  next();
-});
 
-module.exports = mongoose.model("Shift", ShiftSchema);
+module.exports = 
+
+mongoose.models.Shift || mongoose.model("Shift", ShiftSchema);

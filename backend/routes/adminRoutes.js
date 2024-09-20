@@ -24,58 +24,59 @@ router.get("/allemployees",authenticateToken, async (req, res) => {
   }
 });
 
-// Route to create a shift
+// POST route to create a shift
 router.post("/shifts", async (req, res) => {
   const { username, date, startTime, endTime, timezone } = req.body; // Include timezone if needed
-
+  console.log("Creating shift for:", req.body);
+  
   try {
-    // Convert start and end time to moment objects with timezone
-    const shiftStart = moment.tz(`${date} ${startTime}`, "YYYY-MM-DD HH:mm", timezone);
-    const shiftEnd = moment.tz(`${date} ${endTime}`, "YYYY-MM-DD HH:mm", timezone);
+    // Step 1: Convert the shift start and end times to moment objects with timezone
+    const shiftStart = new Date(`${date}T${startTime}`);
+    const shiftEnd = new Date(`${date}T${endTime}`);
 
-    // Step 1: Check if the shift falls within the employee's availability
-    const availability = await Availability.findOne({ username:username, date:date });
-
+    // Step 2: Check if the shift falls within the employee's availability
+    const availability = await Availability.findOne({ username, date });
+    
     if (!availability) {
       return res.status(400).json({
         error: "No availability found for the user on the specified date",
       });
     }
 
-    // Convert availability times with timezone for comparison
-    const availableStart = moment.tz(
-      `${availability.date} ${availability.startTime}`,
-      "YYYY-MM-DD HH:mm",
-      timezone
-    );
-    const availableEnd = moment.tz(
-      `${availability.date} ${availability.endTime}`,
-      "YYYY-MM-DD HH:mm",
-      timezone
+    // Convert availability times to Date objects in the user's timezone
+   
+    const availableStart = new Date(availability.startTime);
+    const availableEnd = new Date(availability.endTime);
+    
+    console.log(
+      "Shift start:", shiftStart,
+      "Shift end:", shiftEnd,
+      "Availability start:", availableStart,
+      "Availability end:", availableEnd
     );
 
     // Check if the shift is within the available time range
-    if (shiftStart.isBefore(availableStart) || shiftEnd.isAfter(availableEnd)) {
+    if ((shiftStart < availableStart) || (shiftEnd  > availableEnd)) {
       return res
         .status(400)
         .json({ error: "Shift is outside of the employee's availability" });
     }
 
-    // Step 2: Check for overlapping shifts
+    // Step 3: Check for overlapping shifts
     const overlappingShift = await Shift.findOne({
       username,
       date,
       $or: [
         // Shift starts during an existing shift
-        { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
+        { startTime: { $lt: shiftEnd }, endTime: { $gt: shiftStart } },
 
         // Shift ends during an existing shift
-        { startTime: { $lt: shiftEnd.format("HH:mm") }, endTime: { $gt: shiftStart.format("HH:mm") } },
+        { startTime: { $lt: shiftEnd }, endTime: { $gt: shiftStart} },
 
         // Shift completely encompasses an existing shift
         {
-          startTime: { $gte: shiftStart.format("HH:mm") },
-          endTime: { $lte: shiftEnd.format("HH:mm") },
+          startTime: { $gte: shiftStart },
+          endTime: { $lte: shiftEnd },
         },
       ],
     });
@@ -86,23 +87,24 @@ router.post("/shifts", async (req, res) => {
         .json({ error: "Shift overlaps with an existing shift" });
     }
 
-    // Step 3: If no overlap and within availability, create the shift
+    // Step 4: If no overlap and within availability, create the shift
     const newShift = await Shift.create({
       username,
       date,
-      startTime,
-      endTime,
+      startTime: shiftStart,
+      endTime: shiftEnd,
       timezone, // Save timezone for the shift if relevant
     });
 
     res.status(201).json({ message: "Shift created successfully!", shift: newShift });
+
   } catch (error) {
     console.error("Error creating shift:", error);
     res.status(500).json({ error: "Error creating shift" });
   }
 });
 
-// get shifts of employees
+// GET route to fetch all shifts
 router.get('/shifts', async (req, res) => {
   try {
     const shifts = await Shift.find();
@@ -112,6 +114,8 @@ router.get('/shifts', async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
 
 
 
