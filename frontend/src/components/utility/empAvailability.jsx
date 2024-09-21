@@ -1,3 +1,48 @@
+/**
+ * EmployeeAvailability component allows users to create, view, and delete their availability.
+ * It fetches existing availability and assigned shifts from the backend and displays them in a table.
+ * Users can create new availability by filling out a form and submitting it.
+ * The component ensures that the availability does not overlap with existing entries and is at least 4 hours long.
+ * 
+ * @component
+ * @returns {JSX.Element} The EmployeeAvailability component.
+ * 
+ * @example
+ * return (
+ *   <EmployeeAvailability />
+ * )
+ * 
+ * @function
+ * @name EmployeeAvailability
+ * 
+ * @description
+ * - Fetches existing availability and assigned shifts on mount.
+ * - Allows users to create new availability by submitting a form.
+ * - Ensures that the new availability does not overlap with existing entries and is at least 4 hours long.
+ * - Displays existing availability in a table with options to delete entries.
+ * 
+ * @state {Object} availability - The state object for the availability form.
+ * @state {Array} createdAvailability - The state array for storing created availability entries.
+ * @state {Array} assignedShifts - The state array for storing assigned shifts.
+ * @state {string} error - The state string for storing error messages.
+ * 
+ * @function handleChange - Handles input changes for the availability form.
+ * @param {Object} e - The event object.
+ * 
+ * @function handleSubmit - Handles form submission for creating new availability.
+ * @param {Object} e - The event object.
+ * 
+ * @function fetchAvailability - Fetches existing availability from the backend.
+ * 
+ * @function fetchAssignedShifts - Fetches assigned shifts from the backend.
+ * 
+ * @function handleDeleteAvailability - Handles deletion of an availability entry.
+ * @param {string} availabilityId - The ID of the availability entry to delete.
+ * 
+ * @function isShiftAssigned - Checks if a shift is assigned for a given availability entry.
+ * @param {Object} avail - The availability entry to check.
+ * @returns {boolean} - Returns true if a shift is assigned, otherwise false.
+ */
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import moment from "moment-timezone";

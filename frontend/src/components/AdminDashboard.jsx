@@ -1,3 +1,43 @@
+
+/**
+ * AdminDashboard component for managing users, availabilities, and shifts.
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered AdminDashboard component.
+ * 
+ * @example
+ * return (
+ *   <AdminDashboard />
+ * )
+ * 
+ * @description
+ * This component fetches and displays users, availabilities, and shifts. It allows the admin to:
+ * - View and manage employee availabilities.
+ * - View and manage assigned shifts.
+ * - Create new shifts for employees.
+ * - Delete existing shifts.
+ * - Select and change the timezone for viewing availabilities and shifts.
+ * 
+ * @state {Array} users - List of users with the employee role.
+ * @state {Array} availabilities - List of employee availabilities.
+ * @state {Array} shifts - List of assigned shifts.
+ * @state {string} selectedTimezone - The selected timezone for viewing availabilities and shifts.
+ * @state {string} selectedEmployee - The selected employee for filtering availabilities and shifts.
+ * @state {string} selectedDate - The selected date for filtering availabilities and shifts.
+ * @state {string} error - Error message for any failed fetch operations.
+ * 
+ * @function fetchUsers - Fetches all users with the employee role.
+ * @function fetchAvailabilities - Fetches the availabilities of all employees.
+ * @function fetchShifts - Fetches the shifts of all employees.
+ * @function handleTimezoneChange - Handles the change of the selected timezone.
+ * @function handleEmployeeChange - Handles the change of the selected employee.
+ * @function handleDateChange - Handles the change of the selected date.
+ * @function handleDeleteShift - Handles the deletion of a shift.
+ * 
+ * @filter filteredAvailabilities - Filters availabilities based on selected employee and date.
+ * @filter filteredShifts - Filters shifts based on selected employee and date.
+ */
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import moment from "moment-timezone";
@@ -71,13 +111,29 @@ const AdminDashboard = () => {
   const handleTimezoneChange = (event) => {
     setSelectedTimezone(event.target.value);
   };
-// used in the call back function below
+
   const handleEmployeeChange = (employee) => {
     setSelectedEmployee(employee);
   };
-// used in the call back function below
+
   const handleDateChange = (date) => {
     setSelectedDate(date);
+  };
+ 
+  const handleDeleteShift = async (shiftId) => {
+    console.log( 'shiftId', shiftId);
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/admin/shifts/${shiftId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Send token for authentication
+        },
+      });
+      setShifts(shifts.filter(shift => shift._id !== shiftId));
+    } catch (err) {
+      setError("Failed to delete shift");
+      console.error(err);
+    }
   };
 
   // Filter availabilities based on selected employee and selected date
@@ -88,6 +144,13 @@ const AdminDashboard = () => {
     const matchesEmployee = !selectedEmployee || avail.username === selectedEmployee;
     const matchesDate = !selectedDate || avail.date === selectedDate;
     return !hasShift && matchesEmployee && matchesDate;
+  });
+
+  // Filter shifts based on selected employee and selected date
+  const filteredShifts = shifts.filter((shift) => {
+    const matchesEmployee = !selectedEmployee || shift.username === selectedEmployee;
+    const matchesDate = !selectedDate || shift.date === selectedDate;
+    return matchesEmployee && matchesDate;
   });
 
   return (
@@ -113,15 +176,15 @@ const AdminDashboard = () => {
           ))}
         </select>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Create Shift Component */}
         <div className="bg-white p-4 rounded shadow-md lg:col-span-1">
           <h2 className="text-lg font-bold mb-4">Create Shift for Employees</h2>
           <CreateShift
-            employees={users}// Pass the callback function
+            employees={users}
             onEmployeeChange={handleEmployeeChange} // Pass the callback function
-            onDateChange={handleDateChange} // Pass the callback function
+            onDateChange={handleDateChange} // Pass the date change callback function
           />
         </div>
 
@@ -150,12 +213,11 @@ const AdminDashboard = () => {
                   // Convert start and end times to the admin's selected timezone without modifying the original availability times
                   const startMoment = moment.tz(avail.startTime, avail.timezone);
                   const endMoment = moment.tz(avail.endTime, avail.timezone);
+
                   const startInAdminTZ = startMoment
-                    .clone()
                     .tz(selectedTimezone)
                     .format("HH:mm");
                   const endInAdminTZ = endMoment
-                    .clone()
                     .tz(selectedTimezone)
                     .format("HH:mm");
 
@@ -182,6 +244,42 @@ const AdminDashboard = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      {/* Assigned Shifts Management */}
+      <div className="bg-white p-6 rounded shadow-md mt-6">
+        <h2 className="text-xl font-bold mb-4">Assigned Shifts Management</h2>
+        <div className="overflow-y-auto max-h-80">
+          <table className="min-w-full bg-white">
+            <thead>
+              <tr>
+                <th className="border px-4 py-2">Employee Username</th>
+                <th className="border px-4 py-2">Date</th>
+                <th className="border px-4 py-2">Start Time</th>
+                <th className="border px-4 py-2">End Time</th>
+                <th className="border px-4 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredShifts.map((shift) => (
+                <tr key={shift._id}>
+                  <td className="border px-4 py-2">{shift.username}</td>
+                  <td className="border px-4 py-2">{moment(shift.date).format("DD-MM-YY")}</td>
+                  <td className="border px-4 py-2">{moment(shift.startTime).format("HH:mm")}</td>
+                  <td className="border px-4 py-2">{moment(shift.endTime).format("HH:mm")}</td>
+                  <td className="border px-4 py-2">
+                    <button
+                      className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                      onClick={() => handleDeleteShift(shift._id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
