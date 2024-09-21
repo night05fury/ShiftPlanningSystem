@@ -15,11 +15,15 @@ const CreateShift = ({ employees, onEmployeeChange,onDateChange }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const startTimeUTC = new Date(`${date}T${startTime}`);
+      const endTimeUTC = new Date(`${date}T${endTime}`);
+
       await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/admin/shifts`, {
         username,
         date,
-        startTime,
-        endTime,
+        startTime: startTimeUTC,
+        endTime: endTimeUTC,
+        //timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
       toast.success("Shift created successfully!");
       setUsername("");
@@ -28,7 +32,7 @@ const CreateShift = ({ employees, onEmployeeChange,onDateChange }) => {
       setEndTime("");
 
     } catch (err) {
-      console.log(err.response.status, err.message);
+      console.log(err.message);
       if (err.response.status === 400) {
         toast.error(err.response.data.error);
       } else {

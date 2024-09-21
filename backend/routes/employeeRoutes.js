@@ -17,7 +17,7 @@ console.log(" availability from employee ",availability);
 
     // Convert start and end times to moment objects
     const start = moment(startTime).format("HH:mm") ;
-    const end = moment(endTime, "HH:mm");
+    const end = moment(endTime).format("HH:mm");
 
     console.log("start time", start);
     console.log("end time", end);
@@ -124,20 +124,5 @@ router.get("/shifts", authenticateToken, async (req, res) => {
   }
 });
 
-// GET availabilty based on selection of date and time range
-router.post("/selectavailability", async (req, res) => {
-  const { date, start, end } = req.body;
-  try {
-    const availabilities = await Availability.find({
-      date,
-      startTime: { $lte: start },
-      endTime: { $gte: end },
-    });
-    res.json(availabilities);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
-  }
-});
 
 module.exports = router;
